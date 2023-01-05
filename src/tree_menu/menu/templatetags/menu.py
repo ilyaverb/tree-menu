@@ -12,6 +12,6 @@ def draw_menu(context, name):
     absolute_uri = context.get('request').build_absolute_uri()
     if absolute_uri:
         active_menu = Menu.objects.get(url=absolute_uri)
-        activated_menu_ids = [active_menu]
-        return {'active_menu_ids': activated_menu_ids.append(active_menu.get_parents_id()), 'menu': menu}
+        activated_menu_ids = [active_menu.id]
+        return {'active_menu_ids': activated_menu_ids + active_menu.get_parents_id(), 'menu': menu}
     return {'menu': menu}

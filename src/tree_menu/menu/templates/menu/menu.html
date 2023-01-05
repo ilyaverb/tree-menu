@@ -1,11 +1,11 @@
 {% load menu %}
 <li class="section">
-    <input type="checkbox" id="groupB"/>
-    <label for="groupB">{{ menu.name }}</label>
+    <input type="checkbox" id="{{ menu.name }}" {% if menu.id in active_menu_ids %} checked {% endif %} />
+    <label for="{{ menu.name }}">{{ menu.name }}</label>
     {% if menu.children.exists %}
     <ul>
         {% for child in menu.children.all %}
-            {% with menu=child template_name='menu/app.html' %}
+            {% with menu=child active_menu_ids=active_menu_ids template_name='menu/menu.html' %}
                 {% include template_name %}
             {% endwith %}
         {% endfor %}
