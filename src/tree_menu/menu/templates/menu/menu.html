@@ -1,13 +1,14 @@
 {% load menu %}
-<a href="{{ menu.url }}">{{ menu.name }}</a>
-{% if menu.children.exists %}
-<details {% if menu.id in active_menu_id %} open {% endif %}>
-    <summary>
-    </summary>
-    {% for child in menu.children.all %}
-        {% with menu=child template_name='menu/menu.html' %}
-            {% include template_name %}
-        {% endwith %}
-    {% endfor %}
-</details>
-{% endif %}
+<li class="section">
+    <input type="checkbox" id="groupB"/>
+    <label for="groupB">{{ menu.name }}</label>
+    {% if menu.children.exists %}
+    <ul>
+        {% for child in menu.children.all %}
+            {% with menu=child template_name='menu/app.html' %}
+                {% include template_name %}
+            {% endwith %}
+        {% endfor %}
+    </ul>
+    {% endif %}
+</li>
