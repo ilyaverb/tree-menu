@@ -1,7 +1,7 @@
 {% load menu %}
 <li class="section">
     <input type="checkbox" id="{{ menu.name }}" {% if menu.id in active_menu_ids %} checked {% endif %} />
-    <label for="{{ menu.name }}">{{ menu.name }}</label>
+    <label for="{{ menu.name }}"><a href="{{ menu.get_url }}">{{ menu.name }}</a></label>
     {% if menu.children.exists %}
     <ul>
         {% for child in menu.children.all %}
