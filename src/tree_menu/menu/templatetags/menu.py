@@ -10,11 +10,11 @@ register = template.Library()
 @register.inclusion_tag('menu/menu.html', takes_context=True)
 def draw_menu(context, name: str) -> dict:
     menu = get_object_or_404(Menu, name=name)
-    absolute_uri = context.get('request').build_absolute_uri()
+    path = context.get('request').path
     menu_context = {'menu': menu}
-    if absolute_uri:
+    if path:
         try:
-            active_menu = Menu.objects.get(url=absolute_uri)
+            active_menu = Menu.objects.get(url=path)
             activated_menu_ids = [active_menu.id] + active_menu.get_parents_id()
         except ObjectDoesNotExist:
             activated_menu_ids = []
