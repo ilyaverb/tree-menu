@@ -1,25 +1,22 @@
-from urllib.parse import urlsplit, urlunsplit
-
-from django.forms import URLField, ModelForm
+from django.core.validators import RegexValidator
+from django.forms import CharField, ModelForm
 
 from tree_menu.menu.models import Menu
 
 
-class TrailingSlashURLField(URLField):
+class TrailingSlashURLField(CharField):
+    default_validators = [RegexValidator(regex=r"^/?(([.a-zA-Z0-9-])+(/){,1})*$")]
 
     def to_python(self, value: str) -> str:
-        path: list = list(urlsplit(super().to_python(value)))
-        splited_path: list = path[2].split('/')
+        splited_path: list = super().to_python(value).split('/')
         if splited_path[-1]:
             splited_path.append('')
-            path[2] = '/'.join(splited_path)
-        trailing_slash_value = urlunsplit(path)
-        return trailing_slash_value
+        return '/'.join(splited_path)
 
 
 class MenuForm(ModelForm):
-    url = TrailingSlashURLField()
+    url = TrailingSlashURLField(required=False)
 
     class Meta:
         model = Menu
-        fields = ('name', 'parent')
+        fields = ('name', 'parent', 'named_url', 'url')
