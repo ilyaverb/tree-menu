@@ -20,3 +20,12 @@ class MenuForm(ModelForm):
     class Meta:
         model = Menu
         fields = ('name', 'parent', 'named_url', 'url')
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if self.cleaned_data['url']:
+            if self.cleaned_data['url'][0] != '/':
+                instance.url = Menu.get_full_path(instance)
+        if commit:
+            instance.save()
+        return instance

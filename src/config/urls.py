@@ -4,6 +4,6 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 urlpatterns = [
-    path('menu/', include('tree_menu.menu.urls')),
     path('admin/', admin.site.urls),
+    path('', include('tree_menu.menu.urls'))
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

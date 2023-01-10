@@ -12,11 +12,10 @@ def draw_menu(context, name: str) -> dict:
     menu = get_object_or_404(Menu, name=name)
     path = context.get('request').path
     menu_context = {'menu': menu}
-    if path:
-        try:
-            active_menu = Menu.objects.get(url=path)
-            activated_menu_ids = [active_menu.id] + active_menu.get_parents_id()
-        except ObjectDoesNotExist:
-            activated_menu_ids = []
-        menu_context.update({'active_menu_ids': activated_menu_ids})
+    try:
+        active_menu = Menu.objects.get(url=path)
+        activated_menu_ids = [active_menu.id] + active_menu.get_parents_id()
+    except ObjectDoesNotExist:
+        activated_menu_ids = []
+    menu_context.update({'active_menu_ids': activated_menu_ids})
     return menu_context
