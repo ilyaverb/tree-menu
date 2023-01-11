@@ -5,5 +5,5 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('tree_menu.menu.urls'))
+    path('', include('tree_menu.menu.urls', namespace='menu'))
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

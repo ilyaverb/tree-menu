@@ -1,5 +1,8 @@
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.forms import CharField, ModelForm
+from django.urls import reverse
+from django.urls.exceptions import NoReverseMatch
 
 from tree_menu.menu.models import Menu
 
@@ -29,3 +32,17 @@ class MenuForm(ModelForm):
         if commit:
             instance.save()
         return instance
+
+    def clean_url(self):
+        url = self.cleaned_data['url']
+        return None if url == '' else url
+
+    def clean_named_url(self):
+        named_url = self.cleaned_data['named_url']
+        if named_url:
+            splited_named_url = named_url.split()
+            try:
+                reverse(splited_named_url[0], args=splited_named_url[1:len(splited_named_url)])
+            except NoReverseMatch as e:
+                raise ValidationError(message=e)
+            return named_url

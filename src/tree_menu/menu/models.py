@@ -13,11 +13,6 @@ class Menu(models.Model):
     def __str__(self):
         return self.name
 
-    # def save(self, *args, **kwargs):
-    #     if not (self.url and self.named_url):
-    #         self.url = self.get_full_path()
-    #     super().save(*args, **kwargs)
-
     def get_full_path(self):
         return self.parent.get_url() + self.get_url() if self.parent else '/{}'.format(self.get_url())
 
