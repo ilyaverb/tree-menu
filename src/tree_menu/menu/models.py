@@ -20,4 +20,22 @@ class Menu(models.Model):
         return [self.parent_id] + self.parent.get_parents_id() if self.parent else []
 
     def get_url(self) -> str:
-        return reverse(self.named_url) if self.named_url else self.url
+        return reverse(self.named_url) if self.named_url else self.url if self.url else ''
+
+    def get_all_children(self, include_self=False):
+        table_name = Menu.objects.model._meta.db_table
+        query = (
+            "WITH RECURSIVE children (id) AS ("
+            f"  SELECT {table_name}.id FROM {table_name} WHERE id = {self.pk}"
+            "  UNION ALL"
+            f"  SELECT {table_name}.id FROM children, {table_name}"
+            f"  WHERE {table_name}.parent_id = children.id"
+            ")"
+            f" SELECT {table_name}.id"
+            f" FROM {table_name}, children WHERE children.id = {table_name}.id"
+        )
+        if not include_self:
+            query += f" AND {table_name}.id != {self.pk}"
+        return Menu.objects.select_related('parent').filter(
+            pk__in=[menu.id for menu in Menu.objects.raw(query)]
+        )

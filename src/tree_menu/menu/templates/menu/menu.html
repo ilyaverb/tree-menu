@@ -2,13 +2,15 @@
 <li class="section">
     <input type="checkbox" id="{{ menu.name }}" {% if menu.id in active_menu_ids %} checked {% endif %} />
     <label for="{{ menu.name }}"><a href="{{ menu.get_url }}">{{ menu.name }}</a></label>
-    {% if menu.children.exists %}
     <ul>
-        {% for child in menu.children.all %}
-            {% with menu=child active_menu_ids=active_menu_ids template_name='menu/menu.html' %}
-                {% include template_name %}
-            {% endwith %}
+        {% for child in children %}
+            {% for key, value in child.items %}
+                {% if key == 'children' %}
+                    {% with menu=child children=value active_menu_ids=active_menu_ids template_name='menu/menu.html' %}
+                        {% include template_name %}
+                    {% endwith %}
+                {% endif %}
+            {% endfor %}
         {% endfor %}
     </ul>
-    {% endif %}
 </li>
