@@ -16,9 +16,6 @@ class Menu(models.Model):
     def get_full_path(self):
         return self.parent.get_url() + self.get_url() if self.parent else '/{}'.format(self.get_url())
 
-    def get_parents_id(self) -> list:
-        return [self.parent_id] + self.parent.get_parents_id() if self.parent else []
-
     def get_url(self) -> str:
         return reverse(self.named_url.split()[0], args=self.named_url.split()[1:len(
             self.named_url.split())]) if self.named_url else self.url if self.url else ''
