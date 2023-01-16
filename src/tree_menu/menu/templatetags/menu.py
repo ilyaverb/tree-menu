@@ -1,47 +1,73 @@
 from django import template
-from django.shortcuts import get_object_or_404
-from django.core.exceptions import ObjectDoesNotExist
 
-from tree_menu.menu.models import Menu
+from tree_menu.menu.models import get_all_children
 
 register = template.Library()
 
 
-def recursive_append_children(items, children):
-    def recursive_append(items, child):
-        for item in items:
-            if item['name'] == child.parent.name:
-                child_data = {'name': child.name, 'url': child.url, 'children': []}
-                item['children'].append(child_data)
-                if child_data in items:
-                    items.remove(child_data)
+def matching_children(menu_items: list, menu_id: int) -> list:
+    res = []
+
+    def realign(node: list | dict, parent=None):
+        if isinstance(node, dict):
+            if node['parent_id'] == menu_id:
+                if node not in res:
+                    res.append(node)
             else:
-                recursive_append(item['children'], child)
+                if not parent:
+                    for r in res:
+                        realign(node, r)
+                else:
+                    if node['parent_id'] == parent['id']:
+                        parent['children'].append(node)
+                    else:
+                        for child in parent['children']:
+                            realign(node, child)
 
-    for child in children:
-        recursive_append(items, child)
-    return items
+        if isinstance(node, list):
+            for item in node:
+                realign(item)
+
+    realign(menu_items)
+
+    return res
 
 
-def get_all_children_data(children) -> list:
-    return [{'name': child.name, 'url': child.get_url(), 'children': []} for child in children]
+def get_all_children_data(children):
+    return [{'name': child.name, 'url': child.get_url(), 'id': child.id, 'parent_id': child.parent_id, 'children': []}
+            for child in children]
 
 
-def get_activated_menu_ids(children, path):
-    for child in children:
-        if child.get_url() == path:
-            return [child.id] + child.get_parents_id()
+def get_activated_menu_ids(menu_items, path):
+    res = []
+    for i in range(len(menu_items)):
+        for item in menu_items:
+            if item['url'] == path:
+                if not item['parent_id']:
+                    return [item['id']]
+                elif item['parent_id'] and item['parent_id'] not in res:
+                    res.extend([item['id'], item['parent_id']])
+            else:
+                if item['id'] in res:
+                    if item['parent_id'] and item['parent_id'] not in res:
+                        res.append(item['parent_id'])
+
+    return res
+
+
+def extract_menu(items, name):
+    for child in items:
+        if child['name'] == name:
+            items.remove(child)
+            return items, child
 
 
 @register.inclusion_tag('menu/menu.html', takes_context=True)
 def draw_menu(context, name: str) -> dict:
-    menu = get_object_or_404(Menu.objects.filter(parent=None), name=name)
     path = context.get('request').path
-    children = menu.get_all_children(include_self=False)
-    all_children_data = get_all_children_data(children)
-    activated_menu_ids = [menu.id] if menu.get_url() == path else []
-    if not activated_menu_ids:
-        activated_menu_ids = get_activated_menu_ids(children, path)
-    children: dict = recursive_append_children(all_children_data, children)
-    menu_context = {'menu': menu, 'children': children, 'active_menu_ids': activated_menu_ids}
-    return menu_context
+    menu_children = list(get_all_children(name, include_self=True))
+    menu_children_data = get_all_children_data(menu_children)
+    activated_menu_ids = get_activated_menu_ids(menu_children_data, path)
+    children_data, menu = extract_menu(menu_children_data, name)
+    children = matching_children(children_data, menu['id'])
+    return {'menu': menu, 'children': children, 'active_menu_ids': activated_menu_ids}
