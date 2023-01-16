@@ -12,7 +12,7 @@ poetry shell
 ```
 
 
-superuser credentials (src/db.sqlite3):
+superuser credentials:
 ```
 login: admin
 password: 0000
